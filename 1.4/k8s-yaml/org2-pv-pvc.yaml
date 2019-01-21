@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: org2-pv
+  labels:
+    app: org2-pv
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /opt/nfs/fabric/fabric/crypto-config/peerOrganizations/org2
+    server: 192.168.0.249
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: org2
+ name: org2-pv
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 10Mi
+ selector:
+   matchLabels:
+     app: org2-pv
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: org2-pvdata
+  labels:
+    app: org2-pvdata
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /opt/nfs/fabric/data/peer/org2
+    server: 192.168.0.249
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: org2
+ name: org2-pvdata
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 10Gi
+ selector:
+   matchLabels:
+     app: org2-pvdata

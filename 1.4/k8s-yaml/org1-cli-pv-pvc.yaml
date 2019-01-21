@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: org1-cli-pv
+    labels:
+      app: org1-cli-pv
+spec:
+    capacity:
+       storage: 500Mi
+    accessModes:
+       - ReadWriteMany
+    nfs:
+      path: /opt/nfs/fabric/fabric/channel-artifacts
+      server: 192.168.0.249
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    namespace: org1
+    name: org1-cli-pv
+spec:
+   accessModes:
+     - ReadWriteMany
+   resources:
+      requests:
+        storage: 10Mi
+   selector:
+     matchLabels:
+       app: org1-cli-pv

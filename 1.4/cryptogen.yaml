@@ -1,0 +1,33 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: orgorderer1
+    CA:
+        Country: CN
+        Province: GuangDong
+        Locality: ShenZhen
+    Specs:
+      - Hostname: orderer0
+      
+PeerOrgs:
+  - Name: Org1
+    Domain: org1
+    EnableNodeOUs: true
+    CA:
+        Country: CN
+        Province: GuangDong
+        Locality: ShenZhen
+    Template:
+      Count: 2
+    Users:
+      Count: 1
+  - Name: Org2
+    Domain: org2
+    EnableNodeOUs: true
+    CA:
+        Country: CN
+        Province: GuangDong
+        Locality: ShenZhen
+    Template:
+      Count: 2
+    Users:
+      Count: 1

@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: zoo
+  namespace: kafka
+spec:
+  serviceName: "zoo"
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: zookeeper
+          image: hyperledger/fabric-zookeeper:0.4.14
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: peer
+            - containerPort: 3888
+              name: leader-election
+          volumeMounts:
+            - name: zkdata
+              mountPath: /var/lib/zookeeper
+  volumeClaimTemplates:
+  - metadata:
+      name: zkdata 
+      annotations:
+        volume.beta.kubernetes.io/storage-class: "zk-kafka-nfs-storage"
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoo
+  namespace: kafka
+spec:
+  ports:
+  - port: 2888
+    name: peer
+  - port: 3888
+    name: leader-election
+  clusterIP: None
+  selector:
+    app: zookeeper
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: kafka
+spec:
+  ports:
+  - port: 2181
+    name: client
+  selector:
+    app: zookeeper

@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: orgorderer1-pv
+  labels:
+    app: orgorderer1-pv
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /opt/nfs/fabric/fabric/crypto-config/ordererOrganizations/orgorderer1
+    server: 192.168.0.249
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: orgorderer1
+ name: orgorderer1-pv
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 10Mi
+ selector:
+   matchLabels:
+     app: orgorderer1-pv
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: orgorderer1-pvdata
+  labels:
+    app: orgorderer1-pvdata
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /opt/nfs/fabric/data/orderer/orgorderer1
+    server: 192.168.0.249
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: orgorderer1
+ name: orgorderer1-pvdata
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 10Gi
+ selector:
+   matchLabels:
+     app: orgorderer1-pvdata

@@ -1,0 +1,92 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: orgorderer1
+  name: orderer0-orgorderer1
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: hyperledger
+        role: orderer
+        org: orgorderer1
+        orderer-id: orderer0
+    spec:
+      containers:
+      - name: orderer0-orgorderer1
+        image: hyperledger/fabric-orderer:1.4.0
+        env:
+        - name: ORDERER_GENERAL_LOGLEVEL
+          value: debug
+        - name: ORDERER_GENERAL_LISTENADDRESS
+          value: 0.0.0.0
+        - name: ORDERER_GENERAL_GENESISMETHOD
+          value: file
+        - name: ORDERER_GENERAL_GENESISFILE
+          value: /var/hyperledger/orderer/orderer.genesis.block
+        - name: ORDERER_GENERAL_LOCALMSPID
+          value: Orgorderer1MSP
+        - name: ORDERER_GENERAL_LOCALMSPDIR
+          value: /var/hyperledger/orderer/msp
+        - name: ORDERER_GENERAL_TLS_ENABLED
+          value: "false"
+        - name: ORDERER_GENERAL_TLS_PRIVATEKEY
+          value: /var/hyperledger/orderer/tls/server.key
+        - name: ORDERER_GENERAL_TLS_CERTIFICATE
+          value: /var/hyperledger/orderer/tls/server.crt
+        - name: ORDERER_GENERAL_TLS_ROOTCAS
+          value: '[/var/hyperledger/orderer/tls/ca.crt]'
+        - name: ORDERER_KAFKA_VERSION
+          value: 0.10.0.1
+        - name: ORDERER_KAFKA_VERBOSE
+          value: "true"
+        - name: ORDERER_KAFKA_BROKERS
+          value: "kafka-0.broker.kafka:9092,kafka-1.broker.kafka:9092,kafka-2.broker.kafka:9092,kafka-3.broker.kafka:9092"
+        - name: GODEBUG
+          value: netdns=go
+        workingDir: /opt/gopath/src/github.com/hyperledger/fabric
+        ports:
+         - containerPort: 7050
+        command: ["orderer"]
+        volumeMounts:
+         - mountPath: /var/hyperledger/orderer/msp
+           name: certificate
+           subPath: orderers/orderer0.orgorderer1/msp
+         - mountPath: /var/hyperledger/orderer/tls
+           name: certificate
+           subPath: orderers/orderer0.orgorderer1/tls
+         - mountPath: /var/hyperledger/orderer/orderer.genesis.block
+           name: certificate
+           subPath: genesis.block
+         - mountPath: /var/hyperledger/production
+           name: ordererdata
+           subPath: orderer0
+      volumes:
+       - name: certificate
+         persistentVolumeClaim:
+             claimName: orgorderer1-pv
+       - name: ordererdata
+         persistentVolumeClaim:
+             claimName: orgorderer1-pvdata
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderer0
+  namespace: orgorderer1
+spec:
+ selector:
+   app: hyperledger
+   role: orderer
+   orderer-id: orderer0
+   org: orgorderer1
+ type: NodePort
+ ports:
+   - name: listen-endpoint
+     protocol: TCP
+     port: 7050
+     targetPort: 7050
+     nodePort: 32000

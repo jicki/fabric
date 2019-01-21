@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: org2
+  name: ca
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+       app: hyperledger
+       role: ca
+       org: org2
+       name: ca
+    spec:
+     containers:
+       - name: ca
+         image: hyperledger/fabric-ca:1.4.0
+         env:
+         - name: FABRIC_CA_HOME
+           value: /etc/hyperledger/fabric-ca-server
+         - name: FABRIC_CA_SERVER_CA_NAME
+           value: ca
+         - name: FABRIC_CA_SERVER_TLS_ENABLED
+           value: "false"
+         - name: FABRIC_CA_SERVER_TLS_CERTFILE
+           value: /etc/hyperledger/fabric-ca-server-config/ca.org2-cert.pem
+         - name: FABRIC_CA_SERVER_TLS_KEYFILE
+           value: /etc/hyperledger/fabric-ca-server-config/44299d5dfb204e07b5274a7048269171876157d1efdab11a5ac631bd78d2fe0d_sk
+         - name: GODEBUG
+           value: netdns=go
+         ports:
+          - containerPort: 7054
+         command: ["sh"]
+         args: ["-c", " fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/44299d5dfb204e07b5274a7048269171876157d1efdab11a5ac631bd78d2fe0d_sk -b admin:adminpw -d "]
+         volumeMounts:
+          - mountPath: /etc/hyperledger/fabric-ca-server-config
+            name: certificate
+            subPath: ca/
+          - mountPath: /etc/hyperledger/fabric-ca-server
+            name: cadata
+            subPath: ca/
+     volumes:
+       - name: certificate
+         persistentVolumeClaim:
+            claimName: org2-pv
+       - name: cadata
+         persistentVolumeClaim:
+            claimName: org2-pvdata
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+   namespace: org2
+   name: ca
+spec:
+ selector:
+   app: hyperledger
+   role: ca
+   org: org2
+   name: ca
+ type: NodePort
+ ports:
+   - name: endpoint
+     protocol: TCP
+     port: 7054
+     targetPort: 7054
+     nodePort: 30100
